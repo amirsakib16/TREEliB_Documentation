@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TREEliB - Binary Tree Operations</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #13131a;
+            --bg-card: rgba(25, 25, 35, 0.6);
+            --accent-primary: #00ff88;
+            --accent-secondary: #0088ff;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --glow: rgba(0, 255, 136, 0.3);
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: float 20s infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            33% {
+                transform: translate(100px, -100px) scale(1.2);
+            }
+
+            66% {
+                transform: translate(-100px, 100px) scale(0.8);
+            }
+        }
+
+        header {
+            padding: 2rem 5%;
+            background: rgba(19, 19, 26, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 255, 136, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 2px;
+            text-shadow: 0 0 40px var(--glow);
+            animation: glow-pulse 3s ease-in-out infinite;
+        }
+
+        .author {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            background: rgba(0, 255, 136, 0.05);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+
+        .author:hover {
+            background: rgba(0, 255, 136, 0.1);
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.2);
+        }
+
+        @keyframes glow-pulse {
+
+            0%,
+            100% {
+                filter: drop-shadow(0 0 20px var(--glow));
+            }
+
+            50% {
+                filter: drop-shadow(0 0 40px var(--glow));
+            }
+        }
+
+        .search-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 2rem auto;
+            position: relative;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 1rem 3rem 1rem 1.5rem;
+            background: rgba(25, 25, 35, 0.8);
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            border-radius: 50px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+            background: rgba(25, 25, 35, 0.95);
+        }
+
+        .search-box::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent-primary);
+            font-size: 1.2rem;
+            pointer-events: none;
+        }
+
+        .search-results {
+            margin-top: 1rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .search-results.active {
+            max-height: 500px;
+        }
+
+        .search-result-item {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .search-result-item:hover {
+            border-color: var(--accent-primary);
+            transform: translateX(10px);
+            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.2);
+        }
+
+        .search-result-title {
+            font-size: 1.3rem;
+            color: var(--accent-primary);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .search-result-desc {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .no-results {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 2rem;
+            font-style: italic;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 4rem 5%;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            text-align: center;
+            position: relative;
+            color: var(--accent-primary);
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+        }
+
+        .methods-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .method-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .method-card.highlight {
+            border-color: var(--accent-primary);
+            box-shadow: 0 20px 60px rgba(0, 255, 136, 0.3);
+            transform: scale(1.02);
+        }
+
+        .method-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .method-card:hover::before {
+            left: 100%;
+        }
+
+        .method-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--accent-primary);
+            box-shadow: 0 20px 60px rgba(0, 255, 136, 0.2);
+        }
+
+        .method-title {
+            font-size: 1.8rem;
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .method-desc {
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .install-section {
+            background: linear-gradient(135deg, rgba(0, 136, 255, 0.1), rgba(0, 255, 136, 0.1));
+            border-radius: 30px;
+            padding: 3rem;
+            margin: 4rem 0;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+        }
+
+        .install-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .install-card {
+            background: rgba(10, 10, 15, 0.6);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid rgba(0, 255, 136, 0.1);
+        }
+
+        .install-card h3 {
+            color: var(--accent-secondary);
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .code-block {
+            background: var(--bg-primary);
+            border-radius: 10px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            color: var(--accent-primary);
+            border-left: 3px solid var(--accent-primary);
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+
+        .import-section {
+            background: rgba(25, 25, 35, 0.6);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .link-button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: var(--bg-primary);
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 700;
+            transition: all 0.3s;
+            margin-top: 1.5rem;
+        }
+
+        .link-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.4);
+        }
+
+        footer {
+            background: var(--bg-secondary);
+            padding: 3rem 5%;
+            text-align: center;
+            border-top: 1px solid rgba(0, 255, 136, 0.1);
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .social-link {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(0, 255, 136, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-weight: 700;
+            transition: all 0.3s;
+            border: 2px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .social-link:hover {
+            background: var(--accent-primary);
+            color: var(--bg-primary);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 255, 136, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 2rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .methods-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .install-grid {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .author {
+                font-size: 0.9rem;
+            }
+
+            .search-container {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-animation" id="bg"></div>
+
+    <header>
+        <h1 class="logo">TREEliB Documentation</h1>
+        <div class="author">Author: Amir Sakib Saad</div>
+    </header>
+
+    <div class="container">
+        <div class="search-container">
+            <input type="text" class="search-box" id="searchInput"
+                placeholder="Search functions... (e.g., .printIN, .Create, postorder)" autocomplete="off">
+            <span class="search-icon"></span>
+            <div class="search-results" id="searchResults"></div>
+        </div>
+
+        <h2 class="section-title">54 Binary Tree Operations</h2>
+
+        <div class="methods-grid" id="methodsGrid">
+            <div class="method-card" data-keywords="create array construct build tree level-order">
+                <h3 class="method-title">.Create(array)</h3>
+                <p class="method-desc">
+                    The Create function constructs a binary tree from a given list (array). It initializes the root node
+                    with the first element and then iterates through the list, assigning left and right child nodes in a
+                    level-order manner. If an element is None, it represents an absence of a node at that position. The
+                    function maintains a queue (nodes) to track nodes whose children need to be assigned. It ensures
+                    that elements are processed sequentially, forming a complete binary tree structure. The function
+                    returns the root node of the generated tree. If the input list is empty, it returns None.
+                </p>
+            </div>
+
+            <div class="method-card" data-keywords="printin inorder in-order left root right traversal bst ascending">
+                <h3 class="method-title">.printIN(array)</h3>
+                <p class="method-desc">
+                    The printIN function prints the binary tree in in-order traversal (Left, Root, Right). It first
+                    constructs the tree using the Create method and then calls the helper function helper_printIN, which
+                    performs a recursive traversal. The helper function: (1) Recursively visits the left subtree. (2)
+                    Prints the current node's value. (3) Recursively visits the right subtree. If the root is None, it
+                    returns without printing anything. This function ensures that nodes are printed in ascending order
+                    for a Binary Search Tree (BST).
+                </p>
+            </div>
+
+            <div class="method-card"
+                data-keywords="printpost postorder post-order left right root traversal delete expression">
+                <h3 class="method-title">.printPOST(array)</h3>
+                <p class="method-desc">
+                    The printPOST function prints the binary tree using postorder traversal (Left, Right, Root). It
+                    first constructs the tree using the Create method and then calls the recursive helper function
+                    helper_printPOST. The helper function follows these steps: (1) Recursively visits the left subtree.
+                    (2) Recursively visits the right subtree. (3) Prints the current node's value. If the root is None,
+                    it returns without printing anything. This traversal is useful for deleting trees and evaluating
+                    expression trees.
+                </p>
+            </div>
+
+            <div class="method-card" data-keywords="printpre preorder pre-order root left right traversal copy prefix">
+                <h3 class="method-title">.printPRE(array)</h3>
+                <p class="method-desc">
+                    The printPRE function prints the binary tree using preorder traversal (Root, Left, Right). It first
+                    constructs the tree using the Create method and then calls the recursive helper function
+                    helper_printPRE. The helper function follows these steps: (1) Prints the current node's value. (2)
+                    Recursively visits the left subtree. (3) Recursively visits the right subtree. If the root is None,
+                    it returns without printing anything. This traversal is useful for copying trees and prefix
+                    expression evaluations.
+                </p>
+            </div>
+
+            <div class="method-card"
+                data-keywords="printlvl levelorder level-order breadth-first bfs queue shortest path">
+                <h3 class="method-title">.printLVL(array)</h3>
+                <p class="method-desc">
+                    The printLVL function prints the binary tree using level-order traversal (Breadth-First Search). It
+                    first constructs the tree using the Create method and then processes nodes level by level using a
+                    queue. Steps: (1) If the tree is empty, return None. (2) Initialize a queue with the root node. (3)
+                    Process each node: Print its value. Add its left and right children (if they exist) to the queue.
+                    (4) Continue until all nodes are printed. This traversal is useful for finding the shortest path and
+                    understanding tree structure layer by layer.
+                </p>
+            </div>
+            <div class="method-card" data-keywords="count nodes size total length recursion depth-first">
+                <h3 class="method-title">.CountNodes(array)</h3>
+                <p class="method-desc">
+                    The CountNodes function counts the total number of nodes in a binary tree. It first constructs the
+                    tree using the Create method and then calls the recursive helper function helper_CountNodes. The
+                    helper function follows these steps: (1) If the root is None, it returns the count as is. (2) It
+                    recursively counts nodes in the left and right subtrees. (3) It returns 1 + L + R, where L and R are
+                    the counts of the subtrees. This function efficiently determines the tree size using a depth-first
+                    approach.
+                </p>
+            </div>
+
+            <div class="method-card" data-keywords="invert flip mirror reverse swap symmetry computer vision">
+                <h3 class="method-title">.invert(array)</h3>
+                <p class="method-desc">
+                    The invert function flips a binary tree by swapping the left and right children of every node. It
+                    first constructs the tree and calls the recursive helper function helper_invert. The steps are: (1)
+                    If the root is None, return None. (2) Recursively swap the left and right subtrees at each node. (3)
+                    After inversion, perform a level-order traversal to print the tree. This mirrors the tree structure
+                    and is useful in tasks like image reflection.
+                </p>
+            </div>
+
+            <div class="method-card" data-keywords="max depth height longest path recursion balancing root leaf">
+                <h3 class="method-title">.MAXdepth(array)</h3>
+                <p class="method-desc">
+                    The MAXdepth function calculates the maximum depth (or height) of a binary tree. It constructs the
+                    tree and calls the recursive helper function helper_MAXdepth. The steps are: (1) If the root is
+                    None, return 0. (2) Recursively calculate the depth of the left and right subtrees. (3) Return the
+                    greater depth between the two subtrees plus 1 for the current node. This helps determine the longest
+                    path from the root to a leaf.
+                </p>
+            </div>
+
+            <div class="method-card" data-keywords="min depth shortest path leaf minimum recursion optimization">
+                <h3 class="method-title">.MINdepth(array)</h3>
+                <p class="method-desc">
+                    The MINdepth function calculates the minimum depth of a binary tree, representing the shortest path
+                    from the root to a leaf node. It uses the helper function helper_MINdepth with these steps: (1) If
+                    the root is None, return 0. (2) If a subtree is missing, return 1 + depth of the existing subtree.
+                    (3) Otherwise, return 1 + the minimum depth of both subtrees. This is useful for shortest path
+                    calculations.
+                </p>
+            </div>
+
+            <div class="method-card" data-keywords="diameter width longest path between nodes optimization graph">
+                <h3 class="method-title">.getDiameter(array)</h3>
+                <p class="method-desc">
+                    The getDiameter function calculates the diameter of a binary tree, which is the longest path between
+                    any two nodes. Using the helper_getDiameter function, it follows these steps: (1) If the root is
+                    None, return 0. (2) Calculate the max depth of subtrees (L and R). (3) Recursively calculate the
+                    diameter of subtrees (dL and dR). (4) The diameter is the maximum of (L + R) or the maximum
+                    diameters of the subtrees (dL, dR).
+                </p>
+            </div>
+
+            <div class="method-card" data-keywords="balanced height difference avl stable recursion check">
+                <h3 class="method-title">.checkBalanced(array)</h3>
+                <p class="method-desc">
+                    The checkBalanced function verifies if a binary tree is balanced (subtree heights differ by no more
+                    than one). It uses helper_checkBalanced to: (1) Return True if the root is None. (2) Calculate
+                    heights of left and right subtrees. (3) Determine balance if the absolute height difference is ≤ 1
+                    and both subtrees are recursively balanced.
+                </p>
+            </div>
+
+            <div class="method-card" data-keywords="identical same equal compare structure recursion match">
+                <h3 class="method-title">.checkSame(arrayA, arrayB)</h3>
+                <p class="method-desc">
+                    The checkSame function determines if two binary trees are identical in structure and data. It
+                    constructs both trees and uses helper_checkSame to: (1) Return True if both roots are None. (2)
+                    Return False if only one root is None. (3) If current node data matches, recursively check left and
+                    right subtrees. It returns True only if all corresponding nodes match.
+                </p>
+            </div>
+
+            <div class="method-card" data-keywords="subtree sub pattern match search contains hierarchy">
+                <h3 class="method-title">.isSUB(mainTree, subTree)</h3>
+                <p class="method-desc">
+                    The isSUB function checks if a binary tree (sub) is a subtree of another (main). It uses
+                    helper_isSUB to: (1) Return True if the sub tree is None. (2) Return False if main is None but sub
+                    is not. (3) Check if trees are identical at the current node using helper_checkIDN. (4) Recursively
+                    check the left and right subtrees of the main tree.
+                </p>
+            </div>
+
+            <div class="method-card" data-keywords="merge combine add sum union join recursion">
+                <h3 class="method-title">.margeTREE(arrayA, arrayB)</h3>
+                <p class="method-desc">
+                    The margeTREE function merges two binary trees by summing node values at corresponding positions. It
+                    uses helper_margeTREE to: (1) Return None if both nodes are missing. (2) Use the value from the
+                    existing node if one is None. (3) Create a new node with the sum of values from both trees. (4)
+                    Recursively merge subtrees and print the result in level order.
+                </p>
+            </div>
+
+            <div class="method-card" data-keywords="path sum target specific search traversal accumulate">
+                <h3 class="method-title">.pathSUM(array, target)</h3>
+                <p class="method-desc">
+                    The pathSUM function calculates the sum of the path from the root to a target node. It uses
+                    helper_pathSUM to: (1) accumulate values starting from 0. (2) If the current node matches the
+                    target, return the accumulated sum. (3) Recursively search left and right subtrees. (4) Return the
+                    sum if the target is found, otherwise return None.
+                </p>
+            </div>
+
+            <div class="method-card" data-keywords="all paths target sum backtracking recursion list find">
+                <h3 class="method-title">.TpathSUM(array, target)</h3>
+                <p class="method-desc">
+                    The TpathSUM function returns all paths where the sum of node values equals a target. It uses
+                    helper_TpathSUM to: (1) Track the current path and sum. (2) Append current node values to the path
+                    list. (3) If the current sum matches the target, add the path to results. (4) Recursively check
+                    subtrees and backtrack by popping the last element.
+                </p>
+            </div>
+
+            <div class="method-card" data-keywords="max path sum global highest optimization dynamic programming">
+                <h3 class="method-title">.MAXpathSUM(array)</h3>
+                <p class="method-desc">
+                    The MAXpathSUM function finds the highest sum along any path in the tree. It uses helper_MAXpathSUM
+                    to: (1) Return 0 for path sum and negative infinity for max sum if the node is None. (2) Recursively
+                    compute max sums from subtrees, ignoring negative sums. (3) Update the global maximum considering
+                    the path through the current root. (4) Return the maximum path sum found.
+                </p>
+            </div>
+
+            <div class="method-card" data-keywords="leaf similar sequence compare terminal nodes end">
+                <h3 class="method-title">.leafSM(arrayA, arrayB)</h3>
+                <p class="method-desc">
+                    The leafSM function checks if the leaf nodes of two trees form the same sequence. It constructs two
+                    trees and uses helper functions to: (1) Traverse the trees and collect all leaf node values into
+                    lists. (2) Compare the resulting lists. (3) Return True if the leaf sequences are identical in value
+                    and order.
+                </p>
+            </div>
+
+            <div class="method-card" data-keywords="right view visible side perspective depth-first traversal">
+                <h3 class="method-title">.rightV(array)</h3>
+                <p class="method-desc">
+                    The rightV function calculates the right side view of a binary tree. It uses helper_rightV to
+                    perform a right-first depth-first traversal: (1) It tracks visited levels. (2) If a level is visited
+                    for the first time, the node is added to the result. (3) It prioritizes the right subtree over the
+                    left to capture the rightmost nodes at each depth.
+                </p>
+            </div>
+
+            <div class="method-card" data-keywords="left view visible side perspective depth-first traversal">
+                <h3 class="method-title">.leftV(array)</h3>
+                <p class="method-desc">
+                    The leftV function calculates the left side view of a binary tree. It uses helper_leftV to perform a
+                    left-first depth-first traversal: (1) It tracks visited levels. (2) If a level is visited for the
+                    first time, the node is added to the result. (3) It prioritizes the left subtree over the right to
+                    capture the leftmost nodes at each depth.
+                </p>
+            </div>
+
+            <div class="method-card" data-keywords="top view vertical horizontal distance breadth-first overhead">
+                <h3 class="method-title">.topV(array)</h3>
+                <p class="method-desc">
+                    The topV function calculates the view of the tree from above. It uses helper_topV with horizontal
+                    distance (hd): (1) Use a queue for breadth-first traversal, tracking hd. (2) If a specific hd is
+                    encountered for the first time, add the node to the view dictionary. (3) Sort by hd and print values
+                    from left to right.
+                </p>
+            </div>
+
+            <div class="method-card" data-keywords="bottom view vertical horizontal distance breadth-first below">
+                <h3 class="method-title">.bottomV(array)</h3>
+                <p class="method-desc">
+                    The bottomV function calculates the view of the tree from below. It uses helper_bottomV with
+                    horizontal distance (hd): (1) Use a queue for breadth-first traversal. (2) Update the view
+                    dictionary with the current node for every hd encountered (overwriting previous ones). (3) This
+                    ensures the bottommost nodes are stored. (4) Sort by hd and print the values.
+                </p>
+            </div>
+            <div class="method-card" data-keywords="symmetric mirror center reflection recursive compare">
+                <h3 class="method-title">.checkSYM(array)</h3>
+                <p class="method-desc">
+                    The checkSYM function determines if a binary tree is a mirror image of itself (symmetric around its
+                    center). It uses the helper function helper_checkSYM to recursively compare subtrees: (1) If both
+                    subtrees are None, return True. (2) If only one is None, return False. (3) If nodes exist, check if
+                    their values match and recursively compare the outer pairs (left-left vs right-right) and inner
+                    pairs (left-right vs right-left).
+                </p>
+
+            </div>
+
+            <div class="method-card" data-keywords="complete tree filled levels left-to-right bfs heap property">
+                <h3 class="method-title">.checkCOM(array)</h3>
+                <p class="method-desc">
+                    The checkCOM function verifies if a binary tree is "complete," meaning all levels are filled except
+                    possibly the last, which is filled left-to-right. Using a level-order traversal (queue): (1) It
+                    processes nodes, marking when a missing child is found. (2) If any non-None node appears after a
+                    missing node, it returns False. (3) Otherwise, it returns True, confirming the structure is suitable
+                    for binary heaps.
+                </p>
+
+            </div>
+
+            <div class="method-card" data-keywords="max width breadth level-order traversal queue size">
+                <h3 class="method-title">.MAXwidth(array)</h3>
+                <p class="method-desc">
+                    The MAXwidth function finds the maximum number of nodes present at any single level of the tree. It
+                    uses a level-order traversal: (1) Initialize a queue with the root. (2) For each level, compare the
+                    queue size (number of nodes at that level) to the current maximum. (3) Process children for the next
+                    level. (4) Return the largest width found.
+                </p>
+            </div>
+
+            <div class="method-card" data-keywords="flip equivalent isomorphic swap transform structure recursion">
+                <h3 class="method-title">.FlipEQ(arrayA, arrayB)</h3>
+                <p class="method-desc">
+                    The FlipEQ function checks if two trees are "flip equivalent," meaning one can be transformed into
+                    the other by swapping left/right children. The helper function checks: (1) If nodes are None or
+                    values differ, return accordingly. (2) Recursively check if subtrees match directly OR if they match
+                    after a swap. (3) Return True if either condition holds for all nodes.
+                </p>
+
+            </div>
+
+            <div class="method-card" data-keywords="flip clockwise rotate left-child root transformation">
+                <h3 class="method-title">.FlipCLK(array)</h3>
+                <p class="method-desc">
+                    The FlipCLK function performs a specific clockwise rotation of the tree structure. It uses
+                    helper_FlipCLK to: (1) Make the root's left child the new root. (2) Move the original root to become
+                    the right child of the new root. (3) Reconnect the new root's original left child. (4) Print the
+                    modified tree using level-order traversal.
+                </p>
+
+            </div>
+
+            <div class="method-card" data-keywords="flip anti-clockwise swap recursive invert mirror">
+                <h3 class="method-title">.FlipACLK(array)</h3>
+                <p class="method-desc">
+                    The FlipACLK function flips the tree in an anti-clockwise manner by recursively swapping the left
+                    and right children of every node. The steps are: (1) Recursively swap children for the current node.
+                    (2) Perform the swap on both left and right subtrees. (3) Print the resulting tree using level-order
+                    traversal. This effectively mirrors the tree.
+                </p>
+            </div>
+
+            <div class="method-card" data-keywords="largest value max search dfs recursion">
+                <h3 class="method-title">.findLv(array)</h3>
+                <p class="method-desc">
+                    The findLv function identifies the largest value in the binary tree using Depth-First Search (DFS).
+                    It uses helper_findLv to: (1) Initialize a maximum tracker (MAX). (2) Compare the current node's
+                    data against MAX, updating it if larger. (3) Recursively traverse left and right subtrees to ensure
+                    every node is checked. (4) Return the highest value found.
+                </p>
+            </div>
+
+            <div class="method-card" data-keywords="smallest value min search dfs recursion">
+                <h3 class="method-title">.findSv(array)</h3>
+                <p class="method-desc">
+                    The findSv function identifies the smallest value in the binary tree using Depth-First Search (DFS).
+                    It uses helper_findSv to: (1) Initialize a minimum tracker (MIN). (2) Compare the current node's
+                    data against MIN, updating it if smaller. (3) Recursively traverse left and right subtrees. (4)
+                    Return the lowest value found.
+                </p>
+            </div>
+
+            <div class="method-card" data-keywords="delete remove replace last node level-order leaf">
+                <h3 class="method-title">.deleteNODE(array, target)</h3>
+                <p class="method-desc">
+                    The deleteNODE function removes a specific node while maintaining tree structure. The steps are: (1)
+                    Use level-order traversal to find the target node and the very last node (rightmost leaf). (2)
+                    Replace the target node's value with the last node's value. (3) Delete the last node from its
+                    original position. (4) Return the modified tree.
+                </p>
+
+            </div>
+
+            <div class="method-card" data-keywords="add insert complete level-order queue fill">
+                <h3 class="method-title">.addNODE(array, node)</h3>
+                <p class="method-desc">
+                    The addNODE function inserts a new node into the first available position to maintain a complete
+                    tree structure. Steps: (1) If the tree is empty, set the new node as root. (2) Perform a level-order
+                    traversal. (3) Add the node as a left child if missing, or a right child if missing. (4) Exit
+                    immediately once the node is placed.
+                </p>
+            </div>
+            <div class="method-card" data-keywords="serialization list level-order traversal queue trim binary tree">
+                <h3 class="method-title">.Serialize(array)</h3>
+                <p class="method-desc"> The Serialize function converts a binary tree into a list representation using
+                    level-order traversal (BFS). It constructs the tree, iterates through nodes to append their values
+                    (including None for missing children) to a result list, and finally trims trailing None values to
+                    ensure a concise representation. </p>
+            </div>
+
+            <div class="method-card" data-keywords="deserialization reconstruction level-order queue binary tree">
+                <h3 class="method-title">.Deserialize(array)</h3>
+                <p class="method-desc"> The Deserialize function reconstructs a binary tree from a serialized list. It
+                    establishes the first element as the root and utilizes a queue to manage level-order reconstruction,
+                    mapping subsequent list elements as left and right children for each parent node in the queue. </p>
+            </div>
+
+            <div class="method-card" data-keywords="identical structural equality recursive matching helper_checkIDN">
+                <h3 class="method-title">.checkIDN(arrayA, arrayB)</h3>
+                <p class="method-desc"> The checkIDN function determines if two binary trees are identical in both
+                    structure and data. Using a recursive helper, it compares nodes at each position; if both nodes are
+                    None, they match, otherwise, it verifies that their data is equal and recursively validates their
+                    left and right subtrees. </p>
+            </div>
+
+            <div class="method-card" data-keywords="children sum property recursion leaf node verification">
+                <h3 class="method-title">.CLDsum(array)</h3>
+                <p class="method-desc"> The CLDsum function verifies the Children Sum Property, where every internal
+                    node's value must equal the sum of its children's values. It recursively traverses the tree,
+                    treating None children as zero, and returns True only if the condition holds for every node in the
+                    structure. </p>
+            </div>
+
+            <div class="method-card" data-keywords="get children target node find children binary tree">
+                <h3 class="method-title">.getCLD(array, target)</h3>
+                <p class="method-desc"> The getCLD function retrieves the immediate children of a specified target node.
+                    It searches the tree for the target value and returns a list containing the values of its left and
+                    right children, returning None if the target is not found or an empty list if it is a leaf. </p>
+            </div>
+
+            <div class="method-card" data-keywords="kth node level distance depth search root">
+                <h3 class="method-title">.KthNODE(array, K)</h3>
+                <p class="method-desc"> The KthNODE function identifies the first node encountered at a specific
+                    distance (K levels) from the root. It navigates the tree structure to the specified depth and
+                    returns the value of the node found at that level, or None if the tree depth is less than K. </p>
+            </div>
+
+            <div class="method-card" data-keywords="get level depth search target node level">
+                <h3 class="method-title">.getLVL(array, target)</h3>
+                <p class="method-desc"> The getLVL function calculates the depth or level of a specific target node
+                    within the tree. It traverses the structure to find the node and returns its distance from the root,
+                    returning -1 if the target node does not exist in the tree. </p>
+            </div>
+
+            <div class="method-card" data-keywords="foldable mirror image structural symmetry helper_checkFLD">
+                <h3 class="method-title">.checkFLD(array)</h3>
+                <p class="method-desc"> The checkFLD function checks if a binary tree is foldable, meaning its left and
+                    right subtrees are structural mirror images. It uses a recursive helper to ensure that for every
+                    pair of nodes, the left-child of one matches the structure of the right-child of the other. </p>
+            </div>
+            <div class="method-card" data-keywords="mirror image symmetry reflection helper_checkMIR tree comparison">
+                <h3 class="method-title">.checkMIR(arrayA, arrayB)</h3>
+                <p class="method-desc"> The checkMIR function determines if two binary trees are mirror images of each
+                    other. It verifies that the left subtree of the first tree is a structural and data reflection of
+                    the right subtree of the second tree, and vice versa, using a recursive helper function. </p>
+            </div>
+
+            <div class="method-card" data-keywords="perfect binary tree depth internal nodes leaves helper_checkPRF">
+                <h3 class="method-title">.checkPRF(array)</h3>
+                <p class="method-desc"> The checkPRF function checks if a binary tree is "perfect," meaning all internal
+                    nodes have exactly two children and all leaf nodes reside at the same depth. It calculates the depth
+                    of the leftmost path and ensures every other path matches this length while maintaining full
+                    branching. </p>
+            </div>
+
+            <div class="method-card" data-keywords="cousins level parent node relationship helper_getLVL helper_getPNT">
+                <h3 class="method-title">.checkCSN(array, node1, node2)</h3>
+                <p class="method-desc"> The checkCSN function identifies if two nodes are cousins. To qualify, both
+                    nodes must exist at the exact same depth (level) within the tree but must originate from different
+                    parent nodes. </p>
+            </div>
+
+            <div class="method-card" data-keywords="lowest common ancestor LCA ancestor search recursion helper_LCA">
+                <h3 class="method-title">.LCA(array, node1, node2)</h3>
+                <p class="method-desc"> The LCA function finds the Lowest Common Ancestor of two specified nodes. It
+                    identifies the deepest node in the tree that serves as an ancestor to both targets, using a
+                    recursive approach that bubbles up the common node once both targets are located in separate
+                    subtrees. </p>
+            </div>
+
+            <div class="method-card" data-keywords="ancestors path target node helper_printANC list">
+                <h3 class="method-title">.printANC(array, target)</h3>
+                <p class="method-desc"> The printANC function retrieves all parent nodes leading from the root to a
+                    specific target node. It recursively explores the tree and, upon finding the target, builds a list
+                    of every node encountered along that specific search path. </p>
+            </div>
+            <div class="method-card" data-keywords="descendants children subtree search returnNODE helper_printDNC">
+                <h3 class="method-title">.printDANC(array, target)</h3>
+                <p class="method-desc"> The printDANC function identifies and returns all descendants of a specific
+                    target node. It first locates the node using a recursive search and then performs a top-down
+                    traversal to gather all children and sub-children into a single list. </p>
+            </div>
+
+            <div class="method-card" data-keywords="distance between nodes edges path length LCA level sum">
+                <h3 class="method-title">.findDST(array, node1, node2)</h3>
+                <p class="method-desc"> The findDST function calculates the shortest distance (number of edges) between
+                    two nodes. It identifies their Lowest Common Ancestor (LCA) and sums the path lengths from the LCA
+                    to each respective node. </p>
+            </div>
+
+            <div class="method-card" data-keywords="full binary tree internal nodes leaf property helper_checkFULL">
+                <h3 class="method-title">.checkFULL(array)</h3>
+                <p class="method-desc"> The checkFULL function determines if a tree is a "Full Binary Tree," where every
+                    node must have either zero or exactly two children. It recursively validates that no node in the
+                    structure possesses only a single child. </p>
+            </div>
+
+            <div class="method-card" data-keywords="update node modify value search replacement helper_changeNODE">
+                <h3 class="method-title">.changeNODE(array, prev, new)</h3>
+                <p class="method-desc"> The changeNODE function searches for a node with a specific value and updates it
+                    to a new value. After the modification, it performs a level-order traversal to display the updated
+                    state of the tree. </p>
+            </div>
+
+            <div class="method-card"
+                data-keywords="tree density node count height ratio helper_MAXdepth helper_CountNodes">
+                <h3 class="method-title">.findDNST(array)</h3>
+                <p class="method-desc"> The findDNST function calculates the density of the binary tree, defined as the
+                    ratio of the total number of nodes to the tree's maximum height. This metric provides insight into
+                    how "filled" or balanced the tree structure is. </p>
+            </div>
+            <div class="method-card" data-keywords="parent node search ancestor retrieval helper_getPNT">
+                <h3 class="method-title">.getPNT(array, target)</h3>
+                <p class="method-desc"> The getPNT function retrieves the immediate parent of a specific target node. It
+                    recursively traverses the tree to find the node whose left or right child matches the target value,
+                    returning the parent's data or None if no parent exists. </p>
+            </div>
+
+            <div class="method-card" data-keywords="siblings node pairs level-order traversal dictionary mapping">
+                <h3 class="method-title">.getSIB(array)</h3>
+                <p class="method-desc"> The getSIB function identifies sibling relationships within the tree. Using
+                    level-order traversal, it detects nodes sharing the same parent and returns a dictionary where each
+                    node is mapped to its corresponding sibling. </p>
+            </div>
+
+            <div class="method-card"
+                data-keywords="AVL tree balanced tree height difference balance factor helper_checkAVL">
+                <h3 class="method-title">.checkAVL(array)</h3>
+                <p class="method-desc"> The checkAVL function determines if a binary tree is height-balanced. It
+                    verifies that for every node, the height difference (balance factor) between the left and right
+                    subtrees is no more than 1, a key property of AVL trees. </p>
+            </div>
+
+            <div class="method-card"
+                data-keywords="BST binary search tree node ordering range validation helper_checkBST">
+                <h3 class="method-title">.checkBST(array)</h3>
+                <p class="method-desc"> The checkBST function validates whether the tree is a Binary Search Tree. It
+                    recursively ensures that for every node, all values in its left subtree are smaller and all values
+                    in its right subtree are larger, using a min/max boundary approach. </p>
+            </div>
+
+            <div class="method-card" data-keywords="root to node distance depth BFS level search helper_rTOn">
+                <h3 class="method-title">.rTOn(array, target)</h3>
+                <p class="method-desc"> The rTOn function calculates the distance (number of edges) from the root to a
+                    specified target node. It uses a Breadth-First Search (BFS) to find the node and returns its depth
+                    level relative to the root. </p>
+            </div>
+        </div>
+
+        <div class="install-section">
+            <h2 class="section-title">Installation Guide</h2>
+
+            <div class="install-grid">
+                <div class="install-card">
+                    <h3>Google Colab</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                        In Google Colab, simply use the following command in a code cell to install the package:
+                    </p>
+                    <div class="code-block">!pip install binaryTREE-operations</div>
+                </div>
+
+                <div class="install-card">
+                    <h3>VS Code</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                        In Visual Studio Code (VS Code), open the terminal and run the following:
+                    </p>
+                    <div class="code-block">pip install binaryTREE-operations</div>
+                </div>
+
+                <div class="install-card">
+                    <h3>Jupyter Notebook</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                        To install the package in Jupyter Notebook, run the following command in a code cell:
+                    </p>
+                    <div class="code-block">!pip install binaryTREE-operations</div>
+                </div>
+            </div>
+
+            <div class="import-section">
+                <h3 style="color: var(--accent-primary); margin-bottom: 1rem;">After installation, you can import and
+                    use the library:</h3>
+                <div class="code-block">from binaryTREE import BinaryTree<br>Binarytree = BinaryTree()</div>
+
+                <a href="https://pypi.org/project/binaryTREE-operations/" class="link-button" target="_blank">
+                    VISIT PyPI PACKAGE →
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">© 2026 TREEliB. All rights reserved.</p>
+        <div class="social-links">
+            <a href="https://www.facebook.com/amir.sakib.92/" class="social-link" aria-label="Facebook">FB</a>
+            <a href="mailto:amirsakib16@gmail.com" class="social-link" aria-label="Instagram">EM</a>
+            <a href="https://www.linkedin.com/in/amir-sakib-saad-2410282a7/" class="social-link" aria-label="LinkedIn">IN</a>
+            <a href="https://github.com/amirsakib16" class="social-link" aria-label="GitHub">GH</a>
+        </div>
+    </footer>
+
+    <script>
+        // Background animation
+        const bg = document.getElementById('bg');
+        for (let i = 0; i < 30; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.width = Math.random() * 100 + 50 + 'px';
+            particle.style.height = particle.style.width;
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 20 + 's';
+            particle.style.animationDuration = Math.random() * 20 + 20 + 's';
+            bg.appendChild(particle);
+        }
+
+        // Card animations
+        document.querySelectorAll('.method-card').forEach((card, index) => {
+            card.style.animationDelay = index * 0.1 + 's';
+            card.style.animation = 'fadeInUp 0.6s ease-out forwards';
+        });
+
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
+        const methodCards = document.querySelectorAll('.method-card');
+
+        const methods = [
+            {
+                title: '.Create(array)',
+                desc: 'Constructs a binary tree from a given list (array) in level-order manner.',
+                keywords: ['create', 'array', 'construct', 'build', 'tree', 'level-order']
+            },
+            {
+                title: '.printIN(array)',
+                desc: 'Prints the binary tree in in-order traversal (Left, Root, Right). Useful for BST in ascending order.',
+                keywords: ['printin', 'inorder', 'in-order', 'left', 'root', 'right', 'traversal', 'bst', 'ascending']
+            },
+            {
+                title: '.printPOST(array)',
+                desc: 'Prints the binary tree using postorder traversal (Left, Right, Root). Useful for deleting trees.',
+                keywords: ['printpost', 'postorder', 'post-order', 'left', 'right', 'root', 'traversal', 'delete', 'expression']
+            },
+            {
+                title: '.printPRE(array)',
+                desc: 'Prints the binary tree using preorder traversal (Root, Left, Right). Useful for copying trees.',
+                keywords: ['printpre', 'preorder', 'pre-order', 'root', 'left', 'right', 'traversal', 'copy', 'prefix']
+            },
+            {
+                title: '.printLVL(array)',
+                desc: 'Prints the binary tree using level-order traversal (Breadth-First Search). Useful for shortest path.',
+                keywords: ['printlvl', 'levelorder', 'level-order', 'breadth-first', 'bfs', 'queue', 'shortest', 'path']
+            },
+
+            {
+                title: '.CountNodes(array)',
+                desc: 'Counts the total number of nodes in the binary tree using a recursive depth-first approach. Useful for determining tree size.',
+                keywords: ['count', 'nodes', 'size', 'total', 'length', 'recursion', 'depth-first']
+            },
+            {
+                title: '.invert(array)',
+                desc: 'Flips the binary tree by swapping the left and right children of every node. Useful for mirroring structures and image processing.',
+                keywords: ['invert', 'flip', 'mirror', 'reverse', 'swap', 'symmetry', 'computer vision']
+            },
+            {
+                title: '.MAXdepth(array)',
+                desc: 'Calculates the maximum depth (height) of the tree from root to the farthest leaf. Useful for finding the longest path.',
+                keywords: ['max', 'depth', 'height', 'longest', 'path', 'recursion', 'balancing', 'root', 'leaf']
+            },
+            {
+                title: '.MINdepth(array)',
+                desc: 'Calculates the minimum depth of the tree from root to the nearest leaf. Useful for finding the shortest path.',
+                keywords: ['min', 'depth', 'shortest', 'path', 'leaf', 'minimum', 'recursion', 'optimization']
+            },
+            {
+                title: '.getDiameter(array)',
+                desc: 'Calculates the diameter of the tree, representing the longest path between any two nodes.',
+                keywords: ['diameter', 'width', 'longest', 'path', 'between', 'nodes', 'optimization', 'graph']
+            },
+            {
+                title: '.checkBalanced(array)',
+                desc: 'Checks if the tree is balanced, meaning the height difference between subtrees is no more than one.',
+                keywords: ['balanced', 'height', 'difference', 'avl', 'stable', 'recursion', 'check']
+            },
+            {
+                title: '.checkSame(arrayA, arrayB)',
+                desc: 'Checks if two binary trees are identical in both structure and node values.',
+                keywords: ['identical', 'same', 'equal', 'compare', 'structure', 'recursion', 'match']
+            },
+            {
+                title: '.isSUB(mainTree, subTree)',
+                desc: 'Determines if one binary tree is a subtree contained within another binary tree.',
+                keywords: ['subtree', 'sub', 'pattern', 'match', 'search', 'contains', 'hierarchy']
+            },
+            {
+                title: '.margeTREE(arrayA, arrayB)',
+                desc: 'Merges two binary trees by summing the values of nodes at corresponding positions.',
+                keywords: ['merge', 'combine', 'add', 'sum', 'union', 'join', 'recursion']
+            },
+            {
+                title: '.pathSUM(array, target)',
+                desc: 'Calculates the sum of the path from the root to a specific target node.',
+                keywords: ['path', 'sum', 'target', 'specific', 'search', 'traversal', 'accumulate']
+            },
+            {
+                title: '.TpathSUM(array, target)',
+                desc: 'Finds all paths in the tree where the sum of node values equals the given target.',
+                keywords: ['all', 'paths', 'target', 'sum', 'backtracking', 'recursion', 'list', 'find']
+            },
+            {
+                title: '.MAXpathSUM(array)',
+                desc: 'Calculates the maximum path sum between any two nodes in the tree, potentially passing through the root.',
+                keywords: ['max', 'path', 'sum', 'global', 'highest', 'optimization', 'dynamic programming']
+            },
+            {
+                title: '.leafSM(arrayA, arrayB)',
+                desc: 'Checks if the leaf nodes of two trees form the exact same sequence of values.',
+                keywords: ['leaf', 'similar', 'sequence', 'compare', 'terminal', 'nodes', 'end']
+            },
+            {
+                title: '.rightV(array)',
+                desc: 'Returns the nodes visible when the tree is viewed from the right side.',
+                keywords: ['right', 'view', 'visible', 'side', 'perspective', 'depth-first', 'traversal']
+            },
+            {
+                title: '.leftV(array)',
+                desc: 'Returns the nodes visible when the tree is viewed from the left side.',
+                keywords: ['left', 'view', 'visible', 'side', 'perspective', 'depth-first', 'traversal']
+            },
+            {
+                title: '.topV(array)',
+                desc: 'Returns the nodes visible from the top view, sorted by horizontal distance.',
+                keywords: ['top', 'view', 'vertical', 'horizontal', 'distance', 'breadth-first', 'overhead']
+            },
+            {
+                title: '.bottomV(array)',
+                desc: 'Returns the nodes visible from the bottom view, sorted by horizontal distance.',
+                keywords: ['bottom', 'view', 'vertical', 'horizontal', 'distance', 'breadth-first', 'below']
+            },
+
+            {
+                title: '.checkSYM(array)',
+                desc: 'Checks if a binary tree is symmetric (a mirror image of itself) by recursively comparing left and right subtrees.',
+                keywords: ['checksym', 'symmetric', 'mirror', 'center', 'reflection', 'recursive', 'compare']
+            },
+            {
+                title: '.checkCOM(array)',
+                desc: 'Determines if a tree is complete using level-order traversal, ensuring all levels are filled left-to-right.',
+                keywords: ['checkcom', 'complete', 'tree', 'filled', 'levels', 'left-to-right', 'bfs', 'heap']
+            },
+            {
+                title: '.MAXwidth(array)',
+                desc: 'Calculates the maximum width of the tree by finding the level with the largest number of nodes.',
+                keywords: ['maxwidth', 'width', 'breadth', 'level-order', 'traversal', 'queue', 'size']
+            },
+            {
+                title: '.FlipEQ(arrayA, arrayB)',
+                desc: 'Checks if two trees are flip equivalent, meaning one can transform into the other by swapping subtrees.',
+                keywords: ['flipeq', 'equivalent', 'isomorphic', 'swap', 'transform', 'structure', 'recursion']
+            },
+            {
+                title: '.FlipCLK(array)',
+                desc: 'Flips the tree in a clockwise direction, restructuring the root and its left child before printing in level-order.',
+                keywords: ['flipclk', 'clockwise', 'rotate', 'left-child', 'root', 'transformation']
+            },
+            {
+                title: '.FlipACLK(array)',
+                desc: 'Flips the tree anti-clockwise by recursively swapping the left and right children of every node.',
+                keywords: ['flipaclk', 'anti-clockwise', 'swap', 'recursive', 'invert', 'mirror']
+            },
+            {
+                title: '.findLv(array)',
+                desc: 'Finds the largest value in the binary tree using a recursive depth-first search traversal.',
+                keywords: ['findlv', 'largest', 'value', 'max', 'search', 'dfs', 'recursion']
+            },
+            {
+                title: '.findSv(array)',
+                desc: 'Finds the smallest value in the binary tree using a recursive depth-first search traversal.',
+                keywords: ['findsv', 'smallest', 'value', 'min', 'search', 'dfs', 'recursion']
+            },
+            {
+                title: '.deleteNODE(array, target)',
+                desc: 'Deletes a target node by replacing it with the last node in the tree and removing the leaf.',
+                keywords: ['deletenode', 'remove', 'replace', 'last', 'node', 'level-order', 'leaf']
+            },
+            {
+                title: '.addNODE(array, node)',
+                desc: 'Adds a new node to the first available position in level-order to keep the binary tree complete.',
+                keywords: ['addnode', 'insert', 'complete', 'level-order', 'queue', 'fill']
+            },
+
+            {
+                "title": ".Serialize(array)",
+                "desc": "Converts a binary tree into a list format using level-order traversal. It includes None values to represent missing children and trims trailing Nones for efficiency.",
+                "keywords": ["serialize", "list", "level-order", "bfs", "traversal", "binary tree", "storage", "queue"]
+            },
+            {
+                "title": ".Deserialize(array)",
+                "desc": "Reconstructs the original binary tree structure from a serialized list. It uses a queue to map list elements back into parent-child relationships.",
+                "keywords": ["deserialize", "reconstruct", "tree construction", "queue", "level-order", "nodes"]
+            },
+            {
+                "title": ".checkIDN(arrayA, arrayB)",
+                "desc": "Checks if two binary trees are identical in both structure and data values through a recursive comparison of nodes and subtrees.",
+                "keywords": ["identical", "equality", "comparison", "recursive", "structure", "data", "matching"]
+            },
+            {
+                "title": ".CLDsum(array)",
+                "desc": "Verifies if a tree satisfies the Children Sum Property, where each node's value equals the sum of its left and right children.",
+                "keywords": ["children sum", "property", "node sum", "verification", "recursion", "leaf nodes"]
+            },
+            {
+                "title": ".getCLD(array, target)",
+                "desc": "Locates a specific target node and returns a list containing its left and right child values. Returns None if the target is missing.",
+                "keywords": ["children", "target", "find", "left child", "right child", "node search"]
+            },
+            {
+                "title": ".KthNODE(array, K)",
+                "desc": "Finds the first node encountered at exactly K levels away from the root. Useful for depth-specific data retrieval.",
+                "keywords": ["kth level", "depth", "distance", "specific level", "node retrieval", "traversal"]
+            },
+            {
+                "title": ".getLVL(array, target)",
+                "desc": "Determines the level or depth of a target node within the tree, returning its distance from the root or -1 if not found.",
+                "keywords": ["level", "depth", "distance", "target", "search", "location"]
+            },
+            {
+                "title": ".checkFLD(array)",
+                "desc": "Determines if a binary tree is foldable by checking if its left and right subtrees are structural mirror images of each other.",
+                "keywords": ["foldable", "mirror", "symmetry", "structural", "recursive", "subtrees"]
+            },
+
+            {
+                "title": ".checkMIR(arrayA, arrayB)",
+                "desc": "Validates if two trees are mirror reflections of one another by recursively comparing opposite subtrees (left-to-right and right-to-left).",
+                "keywords": ["mirror", "reflection", "symmetry", "tree comparison", "recursive"]
+            },
+            {
+                "title": ".checkPRF(array)",
+                "desc": "Verifies if a tree is perfect, ensuring all leaves are at the same level and every internal node has exactly two children.",
+                "keywords": ["perfect", "complete", "full", "depth", "leaf level", "branching"]
+            },
+            {
+                "title": ".checkCSN(array, node1, node2)",
+                "desc": "Determines if two nodes are cousins by checking if they share the same depth but have different parents.",
+                "keywords": ["cousins", "nodes", "level", "depth", "parentage", "relationship"]
+            },
+            {
+                "title": ".LCA(array, node1, node2)",
+                "desc": "Finds the lowest common ancestor node for two given nodes, identifying the deepest shared branch point.",
+                "keywords": ["lca", "lowest common ancestor", "shared node", "search", "recursion"]
+            },
+            {
+                "title": ".printANC(array, target)",
+                "desc": "Traces the path from the target node back to the root, returning a list of all ancestor nodes.",
+                "keywords": ["ancestors", "path", "parent nodes", "trace", "search", "traversal"]
+            },
+
+            {
+                "title": ".printDANC(array, target)",
+                "desc": "Locates a target node and retrieves a list of all its descendants in a top-down recursive manner.",
+                "keywords": ["descendants", "children", "subtree", "target node", "node search"]
+            },
+            {
+                "title": ".findDST(array, node1, node2)",
+                "desc": "Calculates the total distance between two nodes by finding their LCA and summing the edge counts to each node.",
+                "keywords": ["distance", "lca", "edge count", "node path", "level sum"]
+            },
+            {
+                "title": ".checkFULL(array)",
+                "desc": "Checks if the tree is a full binary tree, ensuring every node has either zero or two children.",
+                "keywords": ["full tree", "binary tree", "node structure", "internal nodes", "leaf nodes"]
+            },
+            {
+                "title": ".changeNODE(array, prev, new)",
+                "desc": "Updates an existing node's value to a new value and prints the resulting tree structure.",
+                "keywords": ["update", "modify", "change value", "search and replace", "traversal"]
+            },
+            {
+                "title": ".findDNST(array)",
+                "desc": "Computes the density of the tree by dividing the total number of nodes by the maximum height.",
+                "keywords": ["density", "node count", "height ratio", "tree metrics", "balance"]
+            },
+
+            {
+                "title": ".getPNT(array, target)",
+                "desc": "Searches for and returns the value of the parent node for a given target in the binary tree.",
+                "keywords": ["parent", "ancestor", "node search", "traversal", "relationship"]
+            },
+            {
+                "title": ".getSIB(array)",
+                "desc": "Returns a dictionary mapping nodes to their siblings by identifying pairs that share a common parent.",
+                "keywords": ["siblings", "node pairs", "dictionary", "level-order", "bfs"]
+            },
+            {
+                "title": ".checkAVL(array)",
+                "desc": "Verifies if the tree is an AVL tree by checking if the height difference of subtrees for every node is at most one.",
+                "keywords": ["avl", "balanced", "height", "balance factor", "recursion"]
+            },
+            {
+                "title": ".checkBST(array)",
+                "desc": "Validates the Binary Search Tree property, ensuring all left children are smaller and all right children are larger than their parent.",
+                "keywords": ["bst", "binary search tree", "ordering", "min-max", "validation"]
+            },
+            {
+                "title": ".rTOn(array, target)",
+                "desc": "Computes the path distance (depth) from the root node to a specific target node using BFS.",
+                "keywords": ["root to node", "depth", "distance", "path", "level", "bfs"]
+            }
+
+
+
+
+
+
+        ];
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+
+            // Clear highlights
+            methodCards.forEach(card => card.classList.remove('highlight'));
+
+            if (query === '') {
+                searchResults.classList.remove('active');
+                searchResults.innerHTML = '';
+                return;
+            }
+
+            const results = methods.filter(method =>
+                method.title.toLowerCase().includes(query) ||
+                method.desc.toLowerCase().includes(query) ||
+                method.keywords.some(keyword => keyword.includes(query))
+            );
+
+            if (results.length > 0) {
+                searchResults.innerHTML = results.map(result => `
+                    <div class="search-result-item" onclick="scrollToMethod('${result.title}')">
+                        <div class="search-result-title">${result.title}</div>
+                        <div class="search-result-desc">${result.desc}</div>
+                    </div>
+                `).join('');
+                searchResults.classList.add('active');
+            } else {
+                searchResults.innerHTML = '<div class="no-results">No functions found matching your search.</div>';
+                searchResults.classList.add('active');
+            }
+        });
+
+        function scrollToMethod(title) {
+            searchInput.value = '';
+            searchResults.classList.remove('active');
+            searchResults.innerHTML = '';
+
+            methodCards.forEach(card => {
+                const cardTitle = card.querySelector('.method-title').textContent;
+                if (cardTitle === title) {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    card.classList.add('highlight');
+                    setTimeout(() => card.classList.remove('highlight'), 3000);
+                }
+            });
+        }
+
+        // Close search results when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+
+</html>
