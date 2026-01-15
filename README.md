@@ -23,7 +23,7 @@ A comprehensive Python library for binary tree manipulation, traversal, and anal
 - **Advanced Features**: Find LCA, check for subtrees, get different views (top, bottom, left, right)
 
 ### Supported Operations
-- 60+ tree operations
+- 50+ tree operations
 - Efficient algorithms with optimized time complexity
 - Comprehensive error handling
 - Clean and intuitive API
@@ -32,10 +32,7 @@ A comprehensive Python library for binary tree manipulation, traversal, and anal
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/binary-tree-library.git
-
-# Navigate to the directory
-cd binary-tree-library
+git clone https://github.com/amirsakib16/TREEliB_Documentation.git
 
 # Install dependencies (if any)
 pip install -r requirements.txt
